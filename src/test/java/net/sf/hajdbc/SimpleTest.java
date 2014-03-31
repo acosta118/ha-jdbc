@@ -132,6 +132,7 @@ public class SimpleTest
 		ds.setCluster("cluster");
 		ds.setConfigurationFactory(new SimpleDatabaseClusterConfigurationFactory<>(config));
 		
+		@SuppressWarnings("unchecked")
 		InvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException, ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException>> handler = (InvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException, ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException>>) Proxy.getInvocationHandler(ds.getProxy());
 		ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException> proxyFactory = handler.getProxyFactory();
 

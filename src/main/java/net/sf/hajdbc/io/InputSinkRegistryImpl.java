@@ -57,6 +57,7 @@ public class InputSinkRegistryImpl<S> implements InputSinkRegistry<S>
 	@Override
 	public <I> InputSinkChannel<I, S> get(Class<I> inputClass)
 	{
+		@SuppressWarnings("unchecked")
 		final InputSinkChannel<I, S> channel = (InputSinkChannel<I, S>) this.channels.get(inputClass);
 		
 		return (channel == null) ? null : new InputSinkChannel<I, S>()

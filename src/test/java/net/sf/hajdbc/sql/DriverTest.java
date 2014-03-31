@@ -46,7 +46,9 @@ import static org.mockito.Mockito.*;
  */
 public class DriverTest
 {
+	@SuppressWarnings("unchecked")
 	private DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase> configurationFactory = mock(DatabaseClusterConfigurationFactory.class);
+	@SuppressWarnings("unchecked")
 	private DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = mock(DatabaseClusterFactory.class);
 	private Connection connection = mock(Connection.class);
 	
@@ -88,6 +90,7 @@ public class DriverTest
 		this.connect("jdbc:ha-jdbc://cluster3/dummy", "cluster3");
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void connect(String url, String id) throws Exception
 	{
 		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = mock(DatabaseCluster.class);

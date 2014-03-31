@@ -63,6 +63,7 @@ public class BlobTest
 				{
 					Assert.assertFalse(c.getMetaData().locatorsUpdateCopy());
 					
+					@SuppressWarnings("unchecked")
 					ConnectionInvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource> handler = (ConnectionInvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource>) Proxy.getInvocationHandler(c);
 					ConnectionProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource> proxyFactory = handler.getProxyFactory();
 		

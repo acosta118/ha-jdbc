@@ -165,6 +165,7 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 				// Handle proxy parameter
 				if (Proxy.isProxyClass(parameter.getClass()) && (Proxy.getInvocationHandler(parameter) instanceof InvocationHandler))
 				{
+					@SuppressWarnings("unchecked")
 					final InvocationHandler<Z, D, X, E, ProxyFactory<Z, D, X, E>> handler = (InvocationHandler<Z, D, X, E, ProxyFactory<Z, D, X, E>>) Proxy.getInvocationHandler(parameter);
 					
 					return new Invoker<Z, D, T, R, E>()
