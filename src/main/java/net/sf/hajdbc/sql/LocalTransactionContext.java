@@ -27,11 +27,12 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.InvokeOnContextInvocationStrategy;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 
 /**
- * @author Paul Ferraro
+ * @author Paul Ferraro, André Costa
  * @param <Z>
  * @param <D>
  */
@@ -41,6 +42,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	private final Lock lock;
 	private final TransactionIdentifierFactory<? extends Object> transactionIdFactory;
 	volatile Object transactionId;
+	private D database;
 	
 	/**
 	 * @param cluster
@@ -83,17 +85,27 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 				}
 			};
 		}
-		
+
 		return new InvocationStrategy()
 		{
+			@SuppressWarnings("unchecked")
 			@Override
 			public <ZZ, DD extends Database<ZZ>, T, R, E extends Exception> SortedMap<DD, R> invoke(ProxyFactory<ZZ, DD, T, E> proxy, Invoker<ZZ, DD, T, R, E> invoker) throws E
 			{
 				LocalTransactionContext.this.lock();
 				
 				try
-				{
-					return strategy.invoke(proxy, invoker);
+				{	
+					if(LocalTransactionContext.this.database == null)
+					{
+						SortedMap<DD,R> resultMap = strategy.invoke(proxy, invoker);
+						LocalTransactionContext.this.database = (D) resultMap.firstKey();
+						return resultMap;
+					}
+					else
+					{
+						return new InvokeOnContextInvocationStrategy<Z, D>(LocalTransactionContext.this.database).invoke(proxy, invoker);
+					}
 				}
 				catch (Throwable e)
 				{
@@ -133,6 +145,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	@Override
 	public InvocationStrategy end(final InvocationStrategy strategy, final Durability.Phase phase)
 	{
+		LocalTransactionContext.this.database = null;
 		if (this.transactionId == null) return strategy;
 
 		return new InvocationStrategy()
