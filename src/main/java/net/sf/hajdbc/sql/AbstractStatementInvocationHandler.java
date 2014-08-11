@@ -112,7 +112,8 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 				return repeatableReadSelect ? InvocationStrategies.INVOKE_ON_PRIMARY : InvocationStrategies.INVOKE_ON_NEXT;
 			}
 			
-			InvocationStrategy strategy = InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
+			//InvocationStrategy strategy = InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
+			InvocationStrategy strategy = InvocationStrategies.INVOKE_ON_NEXT;
 			if (!locks.isEmpty())
 			{
 				strategy = new LockingInvocationStrategy(strategy, locks);
@@ -124,7 +125,8 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		if (method.equals(executeBatchMethod))
 		{
 			//System.out.println("Handler: executeBatchMethod");
-			return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getBatchLocks()), this.getProxyFactory().getParentProxy());
+			//return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getBatchLocks()), this.getProxyFactory().getParentProxy());
+			return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.INVOKE_ON_NEXT, this.getProxyFactory().getBatchLocks()), this.getProxyFactory().getParentProxy());
 		}
 		
 		if (method.equals(getMoreResultsMethod))
@@ -143,8 +145,9 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 			{
 				return InvocationStrategies.INVOKE_ON_EXISTING;
 			}
-
-			return InvocationStrategies.INVOKE_ON_ALL;
+			
+			//return InvocationStrategies.INVOKE_ON_ALL;
+			return InvocationStrategies.INVOKE_ON_NEXT;
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);
