@@ -75,6 +75,7 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 	@Override
 	protected InvocationStrategy getInvocationStrategy(S statement, Method method, Object... parameters) throws SQLException
 	{
+		/*
 		System.out.println("Handler: getInvocationStrategy()");
 		if(method != null)
 		{
@@ -86,7 +87,8 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 			System.out.println("sql: " + sql);
 		}
 		System.out.println();
-		
+		*/
+
 		if (driverReadMethodSet.contains(method))
 		{
 			// READ 2
