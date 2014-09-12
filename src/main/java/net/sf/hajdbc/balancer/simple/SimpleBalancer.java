@@ -50,7 +50,6 @@ public class SimpleBalancer<Z, D extends Database<Z>> extends AbstractSetBalance
 	public SimpleBalancer(Set<D> databases)
 	{
 		super(databases);
-		
 		this.reset();
 	}
 	

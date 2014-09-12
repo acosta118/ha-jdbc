@@ -75,20 +75,6 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 	@Override
 	protected InvocationStrategy getInvocationStrategy(S statement, Method method, Object... parameters) throws SQLException
 	{
-		/*
-		System.out.println("Handler: getInvocationStrategy()");
-		if(method != null)
-		{
-			System.out.println("method: " + method.getName());
-		}
-		if(parameters != null && parameters.length > 0)
-		{
-			String sql = (String) parameters[0];
-			System.out.println("sql: " + sql);
-		}
-		System.out.println();
-		*/
-
 		if (driverReadMethodSet.contains(method))
 		{
 			// READ 2
@@ -136,14 +122,14 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		
 		if (method.equals(executeBatchMethod))
 		{
-			//System.out.println("Handler: executeBatchMethod");
+			//System.err.println("Handler: executeBatchMethod");
 			//return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getBatchLocks()), this.getProxyFactory().getParentProxy());
 			return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.INVOKE_ON_NEXT, this.getProxyFactory().getBatchLocks()), this.getProxyFactory().getParentProxy());
 		}
 		
 		if (method.equals(getMoreResultsMethod))
 		{
-			//System.out.println("Handler: executeBatchMethod");
+			//System.err.println("Handler: executeBatchMethod");
 			if (parameters[0].equals(Statement.KEEP_CURRENT_RESULT))
 			{
 				return InvocationStrategies.INVOKE_ON_EXISTING;
@@ -152,7 +138,7 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		
 		if (method.equals(getResultSetMethod))
 		{
-			//System.out.println("Handler: getResultSetMethod");
+			//System.err.println("Handler: getResultSetMethod");
 			if (statement.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY)
 			{
 				return InvocationStrategies.INVOKE_ON_EXISTING;

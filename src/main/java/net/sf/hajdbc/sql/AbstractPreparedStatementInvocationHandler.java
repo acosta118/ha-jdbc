@@ -84,6 +84,8 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 		
 		if (method.equals(executeMethod) || method.equals(executeUpdateMethod))
 		{
+			
+			//return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getLocks()), this.getProxyFactory().getParentProxy());
 			return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getLocks()), this.getProxyFactory().getParentProxy());
 		}
 		

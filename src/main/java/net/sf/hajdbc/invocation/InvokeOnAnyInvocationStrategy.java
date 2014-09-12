@@ -59,7 +59,7 @@ public class InvokeOnAnyInvocationStrategy implements InvocationStrategy
 		for (Map.Entry<D, T> entry: map.entries())
 		{
 			D database = entry.getKey();
-			
+			System.err.println("InvokeOnAny: Invoking on " + database.getId());
 			try
 			{
 				R result = invoker.invoke(database, entry.getValue());

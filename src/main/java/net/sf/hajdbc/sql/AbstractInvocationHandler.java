@@ -20,12 +20,14 @@ package net.sf.hajdbc.sql;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.SQLException;
+import java.sql.Wrapper;
 //import java.sql.Wrapper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 //import java.util.Set;
 import java.util.SortedMap;
 
@@ -51,12 +53,10 @@ import net.sf.hajdbc.util.reflect.Methods;
  */
 public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Exception, F extends ProxyFactory<Z, D, T, E>> implements InvocationHandler<Z, D, T, E, F>
 {
-	/*
 	private static final Method equalsMethod = Methods.getMethod(Object.class, "equals", Object.class);
 	private static final Method hashCodeMethod = Methods.getMethod(Object.class, "hashCode");
 	private static final Method toStringMethod = Methods.getMethod(Object.class, "toString");
 	private static final Set<Method> wrapperMethods = Methods.findMethods(Wrapper.class, "isWrapperFor", "unwrap");
-	*/
 	
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private final Class<T> proxyClass;
@@ -125,14 +125,13 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 	 */
 	protected InvocationStrategy getInvocationStrategy(T object, Method method, Object... parameters) throws E
 	{
-		/*
+		System.err.println("AbstractInvocationHandler: " + method);
 		if (equalsMethod.equals(method) || hashCodeMethod.equals(method) || toStringMethod.equals(method) || wrapperMethods.contains(method))
 		{
 			return InvocationStrategies.INVOKE_ON_ANY;
 		}
 
-		return InvocationStrategies.INVOKE_ON_ALL;
-		*/
+		//return InvocationStrategies.INVOKE_ON_ALL;
 		return InvocationStrategies.INVOKE_ON_ANY;
 	}
 	

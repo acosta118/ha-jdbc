@@ -61,7 +61,13 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	@Override
 	public InvocationStrategy start(final InvocationStrategy strategy, final Connection connection) throws SQLException
 	{
-		if (this.transactionId != null) return strategy;
+
+		System.err.println("LocalTransactionContext.start");
+		if (this.transactionId != null)
+		{
+			System.err.println("!!!!!!!!!!!!!!!TX ID != NULL!!!!!!!!!!!!!!!");
+			return strategy;
+		}
 		
 		if (connection.getAutoCommit())
 		{
@@ -96,7 +102,8 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 				
 				try
 				{	
-					if(LocalTransactionContext.this.database == null)
+					D database = LocalTransactionContext.this.database;
+					if(database == null)
 					{
 						SortedMap<DD,R> resultMap = strategy.invoke(proxy, invoker);
 						LocalTransactionContext.this.database = (D) resultMap.firstKey();
@@ -104,7 +111,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 					}
 					else
 					{
-						return new InvokeOnContextInvocationStrategy<Z, D>(LocalTransactionContext.this.database).invoke(proxy, invoker);
+						return new InvokeOnContextInvocationStrategy<Z, D>(database).invoke(proxy, invoker);
 					}
 				}
 				catch (Throwable e)
