@@ -72,6 +72,7 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 	@Override
 	protected InvocationStrategy getInvocationStrategy(S statement, Method method, Object... parameters) throws SQLException
 	{
+		/*
 		if (databaseReadMethodSet.contains(method))
 		{
 			return InvocationStrategies.INVOKE_ON_NEXT;
@@ -81,12 +82,17 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 		{
 			return InvocationStrategies.INVOKE_ON_EXISTING;
 		}
+		*/
+		
+		if (databaseReadMethodSet.contains(method) || this.setMethods.contains(method) || method.equals(clearParametersMethod) || method.equals(addBatchMethod))
+		{
+			return  this.getProxyFactory().getTransactionContext().start(InvocationStrategies.INVOKE_ON_NEXT, this.getProxyFactory().getParentProxy());
+		}
 		
 		if (method.equals(executeMethod) || method.equals(executeUpdateMethod))
 		{
-			
 			//return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getLocks()), this.getProxyFactory().getParentProxy());
-			return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getLocks()), this.getProxyFactory().getParentProxy());
+			return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.INVOKE_ON_NEXT, this.getProxyFactory().getLocks()), this.getProxyFactory().getParentProxy());
 		}
 		
 		if (method.equals(executeQueryMethod))
@@ -99,10 +105,17 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 			{
 				boolean repeatableReadSelect = (statement.getConnection().getTransactionIsolation() >= Connection.TRANSACTION_REPEATABLE_READ);
 				
-				return repeatableReadSelect ? InvocationStrategies.INVOKE_ON_PRIMARY : InvocationStrategies.INVOKE_ON_NEXT;
+				//return repeatableReadSelect ? InvocationStrategies.INVOKE_ON_PRIMARY : InvocationStrategies.INVOKE_ON_NEXT;
+				InvocationStrategy strategy = InvocationStrategies.INVOKE_ON_NEXT;
+				if(repeatableReadSelect)
+				{
+					strategy = this.getProxyFactory().getTransactionContext().start(strategy, this.getProxyFactory().getParentProxy());
+				}
+				return strategy;
 			}
 			
-			InvocationStrategy strategy = InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
+			//InvocationStrategy strategy = InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
+			InvocationStrategy strategy = InvocationStrategies.INVOKE_ON_NEXT;
 			if (!locks.isEmpty())
 			{
 				strategy = new LockingInvocationStrategy(strategy, locks);

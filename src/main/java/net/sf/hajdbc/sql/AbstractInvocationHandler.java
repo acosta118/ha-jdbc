@@ -125,7 +125,6 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 	 */
 	protected InvocationStrategy getInvocationStrategy(T object, Method method, Object... parameters) throws E
 	{
-		System.err.println("AbstractInvocationHandler: " + method);
 		if (equalsMethod.equals(method) || hashCodeMethod.equals(method) || toStringMethod.equals(method) || wrapperMethods.contains(method))
 		{
 			return InvocationStrategies.INVOKE_ON_ANY;

@@ -62,12 +62,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	public InvocationStrategy start(final InvocationStrategy strategy, final Connection connection) throws SQLException
 	{
 
-		System.err.println("LocalTransactionContext.start");
-		if (this.transactionId != null)
-		{
-			System.err.println("!!!!!!!!!!!!!!!TX ID != NULL!!!!!!!!!!!!!!!");
-			return strategy;
-		}
+		if (this.transactionId != null) return strategy;
 		
 		if (connection.getAutoCommit())
 		{
@@ -181,6 +176,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	@Override
 	public <T, R> Invoker<Z, D, T, R, SQLException> end(final Invoker<Z, D, T, R, SQLException> invoker, Durability.Phase phase)
 	{
+		LocalTransactionContext.this.database = null;
 		if (this.transactionId == null) return invoker;
 
 		return this.durability.getInvoker(invoker, phase, this.transactionId, ExceptionType.SQL.<SQLException>getExceptionFactory());
@@ -193,6 +189,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	public void close()
 	{
 		// Tsk, tsk... User neglected to commit/rollback transaction
+		LocalTransactionContext.this.database = null;
 		if (this.transactionId != null)
 		{
 			this.unlock();

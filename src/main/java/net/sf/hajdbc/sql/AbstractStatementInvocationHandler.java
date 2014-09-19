@@ -77,7 +77,6 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 	{
 		if (driverReadMethodSet.contains(method))
 		{
-			// READ 2
 			return InvocationStrategies.INVOKE_ON_ANY;
 		}
 
@@ -88,7 +87,6 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 
 		if (executeMethodSet.contains(method))
 		{
-			// WRITE
 			List<Lock> locks = this.getProxyFactory().extractLocks((String) parameters[0]);
 			
 			// return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, locks), this.getProxyFactory().getParentProxy());
@@ -97,7 +95,6 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 
 		if (method.equals(executeQueryMethod))
 		{
-			// READ 1
 			String sql = (String) parameters[0];
 			List<Lock> locks = this.getProxyFactory().extractLocks(sql);
 			int concurrency = statement.getResultSetConcurrency();
@@ -107,7 +104,13 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 			{
 				boolean repeatableReadSelect = (statement.getConnection().getTransactionIsolation() >= Connection.TRANSACTION_REPEATABLE_READ);
 				
-				return repeatableReadSelect ? InvocationStrategies.INVOKE_ON_PRIMARY : InvocationStrategies.INVOKE_ON_NEXT;
+				//return repeatableReadSelect ? InvocationStrategies.INVOKE_ON_PRIMARY : InvocationStrategies.INVOKE_ON_NEXT;
+				InvocationStrategy strategy = InvocationStrategies.INVOKE_ON_NEXT;
+				if(repeatableReadSelect)
+				{
+					strategy = this.getProxyFactory().getTransactionContext().start(strategy, this.getProxyFactory().getParentProxy());
+				}
+				return strategy;
 			}
 			
 			//InvocationStrategy strategy = InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
@@ -122,30 +125,29 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		
 		if (method.equals(executeBatchMethod))
 		{
-			//System.err.println("Handler: executeBatchMethod");
 			//return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getBatchLocks()), this.getProxyFactory().getParentProxy());
 			return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.INVOKE_ON_NEXT, this.getProxyFactory().getBatchLocks()), this.getProxyFactory().getParentProxy());
 		}
 		
 		if (method.equals(getMoreResultsMethod))
 		{
-			//System.err.println("Handler: executeBatchMethod");
 			if (parameters[0].equals(Statement.KEEP_CURRENT_RESULT))
 			{
-				return InvocationStrategies.INVOKE_ON_EXISTING;
+				//return InvocationStrategies.INVOKE_ON_EXISTING;
+				return this.getProxyFactory().getTransactionContext().start(InvocationStrategies.INVOKE_ON_NEXT, this.getProxyFactory().getParentProxy());
 			}
 		}
 		
 		if (method.equals(getResultSetMethod))
 		{
-			//System.err.println("Handler: getResultSetMethod");
 			if (statement.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY)
 			{
-				return InvocationStrategies.INVOKE_ON_EXISTING;
+				//return InvocationStrategies.INVOKE_ON_EXISTING;
+				return this.getProxyFactory().getTransactionContext().start(InvocationStrategies.INVOKE_ON_NEXT, this.getProxyFactory().getParentProxy());
 			}
 			
 			//return InvocationStrategies.INVOKE_ON_ALL;
-			return InvocationStrategies.INVOKE_ON_NEXT;
+			return this.getProxyFactory().getTransactionContext().start(InvocationStrategies.INVOKE_ON_NEXT, this.getProxyFactory().getParentProxy());
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);
