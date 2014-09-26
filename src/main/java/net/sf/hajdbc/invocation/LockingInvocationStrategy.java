@@ -39,11 +39,6 @@ public class LockingInvocationStrategy implements InvocationStrategy
 	 */
 	public LockingInvocationStrategy(InvocationStrategy strategy, List<Lock> lockList)
 	{
-		System.err.println("new LockingInvocationStrategy");
-		for(Lock l : lockList)
-		{
-			System.err.println("Locks: " + l.toString());
-		}
 		this.strategy = strategy;
 		this.lockList = lockList;
 	}
