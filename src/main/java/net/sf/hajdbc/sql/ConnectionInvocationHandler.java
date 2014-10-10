@@ -143,7 +143,8 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 		
 		if (databaseReadMethodSet.contains(method) || method.equals(getMetaDataMethod))
 		{
-			return InvocationStrategies.INVOKE_ON_NEXT;
+			//return InvocationStrategies.INVOKE_ON_NEXT;
+			return this.getProxyFactory().getTransactionContext().start(InvocationStrategies.INVOKE_ON_NEXT, connection);
 		}
 		
 		if (driverWriterMethodSet.contains(method) || method.equals(closeMethod) || createStatementMethodSet.contains(method))
@@ -153,7 +154,8 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 		
 		if (prepareStatementMethodSet.contains(method) || prepareCallMethodSet.contains(method) || createLocatorMethodSet.contains(method))
 		{
-			return InvocationStrategies.INVOKE_ON_ALL;
+			//return InvocationStrategies.INVOKE_ON_ALL;
+			return this.getProxyFactory().getTransactionContext().start(InvocationStrategies.INVOKE_ON_NEXT, connection);
 		}
 		
 		if (endTransactionMethodSet.contains(method))
