@@ -138,7 +138,8 @@ public class AllResultsCollector implements InvokeOnManyInvocationStrategy.Resul
 		@Override
 		public R call() throws E
 		{
-			return this.invoker.invoke(this.database, this.object);
+			R result = this.invoker.invoke(this.database, this.object);
+			return result;
 		}
 	}
 }

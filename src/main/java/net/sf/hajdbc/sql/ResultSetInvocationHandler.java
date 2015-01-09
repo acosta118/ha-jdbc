@@ -29,6 +29,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
 import net.sf.hajdbc.invocation.Invoker;
+import net.sf.hajdbc.invocation.LockingInvocationStrategy;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -101,7 +102,9 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 		
 		if (driverWriteMethodSet.contains(method) || method.equals(closeMethod))
 		{
-			return InvocationStrategies.INVOKE_ON_EXISTING;
+			//return InvocationStrategies.INVOKE_ON_EXISTING;
+			return this.getProxyFactory().getTransactionContext().start(InvocationStrategies.INVOKE_ON_NEXT, this.getProxyFactory().getParentProxy().getConnection());
+
 		}
 		
 		if (transactionalWriteMethodSet.contains(method))

@@ -61,8 +61,10 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	@Override
 	public InvocationStrategy start(final InvocationStrategy strategy, final Connection connection) throws SQLException
 	{
-
-		if (this.transactionId != null) return strategy;
+		if (this.transactionId != null)
+		{
+			return strategy;
+		}
 		
 		if (connection.getAutoCommit())
 		{
@@ -100,15 +102,12 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 					D database = LocalTransactionContext.this.database;
 					if(database == null)
 					{
-						System.err.println("No database associated");
 						SortedMap<DD,R> resultMap = strategy.invoke(proxy, invoker);
 						LocalTransactionContext.this.database = (D) resultMap.firstKey();
-						System.err.println("Associated database " + LocalTransactionContext.this.database.getId());
 						return resultMap;
 					}
 					else
 					{
-						System.err.println("Database associated (" + database.getId() + ")");
 						return new InvokeOnContextInvocationStrategy<Z, D>(database).invoke(proxy, invoker);
 					}
 				}
@@ -150,24 +149,30 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	@Override
 	public InvocationStrategy end(final InvocationStrategy strategy, final Durability.Phase phase)
 	{
-		LocalTransactionContext.this.database = null;
-
-		System.err.println("Database cleared (end1)");
-		if (this.transactionId == null) return strategy;
+		/*
+		if (this.transactionId == null)
+		{
+			return strategy;
+		}
+		*/
 
 		return new InvocationStrategy()
 		{
 			@Override
 			public <ZZ, DD extends Database<ZZ>, T, R, E extends Exception> SortedMap<DD, R> invoke(ProxyFactory<ZZ, DD, T, E> proxy, Invoker<ZZ, DD, T, R, E> invoker) throws E
 			{
-				InvocationStrategy durabilityStrategy = LocalTransactionContext.this.durability.getInvocationStrategy(strategy, phase, LocalTransactionContext.this.transactionId);
-				
+				LocalTransactionContext.this.lock();
 				try
 				{
+					D database = LocalTransactionContext.this.database;
+
+					InvocationStrategy usedStrategy = (database == null) ? strategy : new InvokeOnContextInvocationStrategy<Z, D>(database);
+					InvocationStrategy durabilityStrategy = LocalTransactionContext.this.durability.getInvocationStrategy(usedStrategy, phase, LocalTransactionContext.this.transactionId);
 					return durabilityStrategy.invoke(proxy, invoker);
 				}
 				finally
 				{
+					LocalTransactionContext.this.database = null;
 					LocalTransactionContext.this.unlock();
 				}
 			}
@@ -181,9 +186,8 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	@Override
 	public <T, R> Invoker<Z, D, T, R, SQLException> end(final Invoker<Z, D, T, R, SQLException> invoker, Durability.Phase phase)
 	{
-		LocalTransactionContext.this.database = null;
-
-		System.err.println("Database cleared (end2)");
+		//LocalTransactionContext.this.database = null;
+		
 		if (this.transactionId == null) return invoker;
 
 		return this.durability.getInvoker(invoker, phase, this.transactionId, ExceptionType.SQL.<SQLException>getExceptionFactory());
@@ -195,10 +199,9 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	@Override
 	public void close()
 	{
-		// Tsk, tsk... User neglected to commit/rollback transaction
 		LocalTransactionContext.this.database = null;
-
-		System.err.println("Database cleared (close)");
+		
+		// Tsk, tsk... User neglected to commit/rollback transaction
 		if (this.transactionId != null)
 		{
 			this.unlock();

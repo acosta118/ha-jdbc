@@ -63,7 +63,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 	private static final Method createClobMethod = Methods.getMethod(Connection.class, "createClob");
 	private static final Method createNClobMethod = Methods.getMethod(Connection.class, "createNClob");
 	private static final Method createSQLXMLMethod = Methods.getMethod(Connection.class, "createSQLXML");
-	
+
 	private static final Set<Method> endTransactionMethodSet = new HashSet<>(Arrays.asList(commitMethod, rollbackMethod, setAutoCommitMethod));
 	private static final Set<Method> createLocatorMethodSet = new HashSet<>(Arrays.asList(createBlobMethod, createClobMethod, createNClobMethod, createSQLXMLMethod));
 	
@@ -147,10 +147,24 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 			return this.getProxyFactory().getTransactionContext().start(InvocationStrategies.INVOKE_ON_NEXT, connection);
 		}
 		
-		if (driverWriterMethodSet.contains(method) || method.equals(closeMethod) || createStatementMethodSet.contains(method))
+		
+		if (driverWriterMethodSet.contains(method) || method.equals(closeMethod))
 		{
 			return InvocationStrategies.INVOKE_ON_EXISTING;
 		}
+		
+		/*
+		if (driverWriterMethodSet.contains(method))
+		{
+			return InvocationStrategies.INVOKE_ON_EXISTING;
+		}
+		*/
+		
+		if (createStatementMethodSet.contains(method))
+		{
+			return this.getProxyFactory().getTransactionContext().start(InvocationStrategies.INVOKE_ON_NEXT, connection);
+		}
+		
 		
 		if (prepareStatementMethodSet.contains(method) || prepareCallMethodSet.contains(method) || createLocatorMethodSet.contains(method))
 		{
@@ -158,9 +172,18 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 			return this.getProxyFactory().getTransactionContext().start(InvocationStrategies.INVOKE_ON_NEXT, connection);
 		}
 		
-		if (endTransactionMethodSet.contains(method))
+		if (method.equals(setAutoCommitMethod))
 		{
 			return this.getProxyFactory().getTransactionContext().end(InvocationStrategies.END_TRANSACTION_INVOKE_ON_ALL, phaseRegistry.get(method));
+		}
+		
+		//if (endTransactionMethodSet.contains(method))
+			
+		if (method.equals(commitMethod) || method.equals(rollbackMethod))
+		{
+			//return this.getProxyFactory().getTransactionContext().end(InvocationStrategies.END_TRANSACTION_INVOKE_ON_ALL, phaseRegistry.get(method));
+			return this.getProxyFactory().getTransactionContext().end(InvocationStrategies.INVOKE_ON_NEXT, phaseRegistry.get(method));
+
 		}
 		
 		if (method.equals(rollbackSavepointMethod) || method.equals(releaseSavepointMethod))

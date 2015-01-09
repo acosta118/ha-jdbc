@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -82,7 +83,7 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 
 		if (driverWriteMethodSet.contains(method) || method.equals(closeMethod))
 		{
-			return InvocationStrategies.INVOKE_ON_EXISTING;
+			return this.getProxyFactory().getTransactionContext().start(InvocationStrategies.INVOKE_ON_NEXT, this.getProxyFactory().getParentProxy());
 		}
 
 		if (executeMethodSet.contains(method))

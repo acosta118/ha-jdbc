@@ -93,7 +93,7 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 
 		Invoker<Z, D, T, R, E> invoker = this.getInvoker(proxy, method, parameters);
 
-		this.logger.log(Level.TRACE, "Invoking {0} using {1}", method, strategy);
+		this.logger.log(Level.TRACE, "Invoking {0} with parameters {1}, using {2}", method, Arrays.toString(parameters), strategy);
 		SortedMap<D, R> results = strategy.invoke(this.proxyFactory, invoker);
 
 		this.postInvoke(invoker, proxy, method, parameters);
@@ -130,8 +130,7 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 			return InvocationStrategies.INVOKE_ON_ANY;
 		}
 
-		//return InvocationStrategies.INVOKE_ON_ALL;
-		return InvocationStrategies.INVOKE_ON_ANY;
+		return InvocationStrategies.INVOKE_ON_ALL;
 	}
 	
 	/**
